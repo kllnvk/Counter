@@ -1,0 +1,7 @@
+.valueText {
+    color: black;
+}
+
+.valueText.max {
+    color: red;
+}
