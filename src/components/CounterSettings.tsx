@@ -1,41 +1,39 @@
+import {useState} from "react";
+import {changeCounterValuesAC, changeEditModeAC} from "../features/counterReducer";
+import {selectCounterValue, selectEditMode, selectMaxValue, selectStartValue} from "../features/counterSelectors";
+import {useAppDispatch} from "../hooks/useAppDispatch";
+import {useAppSelector} from "../hooks/useAppSelector";
 import Button from "./Button.tsx";
+import styles from "./Counter.module.css";
 import Input from "./Input.tsx";
 
-type CounterSettingsProps = {
-    setStartValue: (value: number) => void
-    setMaxValue: (value: number) => void
-    editMode: boolean
-    setEditMode: (value: boolean) => void
-    error: boolean
-    setCounterValue: (value: number) => void
-    setTempStartValue: (value: number) => void
-    setTempMaxValue: (value: number) => void
-    tempStartValue: number
-    tempMaxValue: number
-}
+const CounterSettings = () => {
+    const startValue = useAppSelector(selectStartValue);
+    const maxValue = useAppSelector(selectMaxValue);
+    const counterValue = useAppSelector(selectCounterValue);
+    const editMode = useAppSelector(selectEditMode)
 
-const CounterSettings = ({
-                             setStartValue, setMaxValue, editMode,
-                             setEditMode, error, setCounterValue, setTempStartValue,
-                             setTempMaxValue, tempStartValue, tempMaxValue
-                         }: CounterSettingsProps) => {
+    const dispatch = useAppDispatch();
+
+    const [tempStartValue, setTempStartValue] = useState<number>(startValue)
+    const [tempMaxValue, setTempMaxValue] = useState<number>(maxValue)
+
+    const error = tempStartValue < 0 || tempMaxValue <= tempStartValue
+    const valueClassName = counterValue >= maxValue ? styles.valueText + ' ' + styles.max : styles.valueText
 
     const setStartValueHandler = (value: number) => {
         setTempStartValue(value)
-        setEditMode(true)
+        dispatch(changeEditModeAC({isEditMode: true}))
     }
 
     const setMaxValueHandler = (value: number) => {
         setTempMaxValue(value)
-        setEditMode(true)
-
+        dispatch(changeEditModeAC({isEditMode: true}))
     }
 
     const setButtonHandler = () => {
-        setEditMode(false)
-        setStartValue(tempStartValue)
-        setMaxValue(tempMaxValue)
-        setCounterValue(tempStartValue)
+        dispatch(changeCounterValuesAC({startValue: tempStartValue, maxValue: tempMaxValue, counterValue: tempStartValue}))
+        dispatch(changeEditModeAC({isEditMode: false}))
     }
 
 
@@ -53,6 +51,9 @@ const CounterSettings = ({
             </div>
             <div>
                 <Button title={"set"} disabled={!editMode || error} onClick={setButtonHandler}/>
+            </div>
+            <div>
+                <h3 className={valueClassName}>{error ? "Incorrect value" : editMode ? "enter values and press 'set'" : counterValue}</h3>
             </div>
         </div>
     );
